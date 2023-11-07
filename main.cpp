@@ -23,84 +23,105 @@
 
 using namespace std;
 
-class Airport {
-public:
-  char code[5];
-  double longitude;
-  double latitude;
-};
-
 void simpleSortTotal(Airport *s[], int c);
 double distanceEarth(double lat1d, double lon1d, double lat2d, double lon2d);
 
+void simpleSortTotal(linkedlist *data) {
+  int c = data->size();
+  node *ai = data->get_node(0);
+  while (ai != NULL) {
+    node *aj = ai;
+    while (aj != NULL) {
+      if (ai->airport->distance < aj->airport->distance) {
+				
+        // data.swap(i, j);
+        Airport temp = *ai->airport;
+        *ai->airport = *aj->airport;
+        *aj->airport = temp;
+      }
+      aj = aj->next;
+    }
+    // printf("%d\n", i);
+    ai = ai->next;
+  }
+}
+
 int main() {
   ifstream infile;
-  int i = 0;
-  char cNum[15];
-  Airport *airportArr[13500]; // Replace array with Linked List
+  int c = 0;
+  Airport *airportArr[100000]; // Replace array with Linked List
   int airportCount;
-  // Airport* a[13500];
+  linkedlist airports = linkedlist();
 
   infile.open("airport-codes_US.csv", ifstream::in);
+
+  Airport austin = Airport();
+  austin.latitude = 30.19449997;
+  austin.longitude = -97.66989899;
+
   if (infile.is_open()) {
-    int c = 0;
-		printf("readline\n");
-		char _[256];
-		infile.getline(_, 256, '\n');
+    char buf[257];
+    infile.getline(buf, 256, '\n');
     while (true) {
-			printf("checking\n");
-			if (!infile.good()) {
-				printf("bad\n");
-				break;
-			}
-      airportArr[c] = new Airport();
-      infile.getline(airportArr[c]->code, 256, ','); // code
-			infile.getline(_, 256, ','); // type
-			infile.getline(_, 256, ','); // name
-      infile.getline(cNum, 256, ',');
-      airportArr[c]->longitude = atof(cNum);
-			printf("before\n");
-      infile.getline(cNum, 256, '\n');
-			printf("after\n");
-      airportArr[c]->latitude = atof(cNum);
-
-      //if (!(c % 1000))
-        cout << airportArr[c]->code << " long: " << airportArr[c]->longitude
-             << " lat: " << airportArr[c]->latitude << endl;
-
-      /*
-      if (!(c % 1000))
-      {
-          cout << airportArr[c]->code << " long: " << airportArr[c]->longitude
-      << " lat: " << airportArr[c]->latitude <<  endl; cout <<
-      airportArr[c+1]->code << endl; //" long: " << airportArr[c+1]->longitude
-      << " lat: " << airportArr[c+1]->latitude <<  endl;
+      if (!infile.good()) {
+        break;
       }
-      */
 
-      i++;
+      Airport *a = new Airport();
+
+      airportArr[c] = new Airport();
+
+      infile.getline(a->code, 256, ','); // ident
+
+      if (string(a->code) == "\n" || string(a->code) == "") {
+        break;
+      }
+
+      infile.getline(buf, 256, ','); // type
+      infile.getline(buf, 256, ','); // name
+
+      infile.getline(buf, 256, ','); // long
+      a->longitude = atof(buf);
+      infile.getline(buf, 256, ','); // lat
+      a->latitude = atof(buf);
+
+      infile.getline(buf, 256, ',');
+      infile.getline(buf, 256, ',');
+      infile.getline(buf, 256, ',');
+      infile.getline(buf, 256, ',');
+      infile.getline(buf, 256, ',');
+      infile.getline(buf, 256, ',');
+      infile.getline(buf, 256, ',');
+      infile.getline(buf, 256, '\n');
+
+      a->distance = distanceEarth(austin.latitude, austin.longitude, a->latitude,
+                                  a->longitude);
+
+      if (!(c % 1000)) {
+        cout << a->code << ": long: " << a->longitude << " lat: " << a->latitude
+             << " distance: " << a->distance << endl;
+      }
+
       c++;
+
+      airports.add(a);
     }
+
     airportCount = c - 1;
     infile.close();
 
-    for (int c = 0; c < airportCount; c++)
-      if (!(c % 1000)) {
-        cout << airportArr[c]->code << " long: " << airportArr[c]->longitude
-             << " lat: " << airportArr[c]->latitude << endl;
-        cout << airportArr[c + 1]->code
-             << " long: " << airportArr[c + 1]->longitude
-             << " lat: " << airportArr[c + 1]->latitude << endl;
-        cout << "Distance between " << airportArr[c]->code << " and "
-             << airportArr[c + 1]->code << " is "
-             << distanceEarth(airportArr[c]->longitude, airportArr[c]->latitude,
-                              airportArr[c + 1]->longitude,
-                              airportArr[c + 1]->latitude)
-             << endl;
-      }
-
   } else {
     cout << "Error opening file";
+  }
+
+  printf("sorting\n");
+  simpleSortTotal(&airports);
+  printf("done\n");
+
+  for (int i = 0; i < 0; i++) {
+    // printf("a\n");
+    Airport *a = airports.get(i);
+    printf("%s: %f\n", a->code, a->distance);
   }
 }
 
@@ -135,7 +156,7 @@ double distanceEarth(double lat1d, double lon1d, double lat2d, double lon2d) {
 }
 
 /*
-        Provide sort routine on linked list
+Provide sort routine on linked list
 */
 /*
 void simpleSortTotal()
